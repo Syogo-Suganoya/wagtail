@@ -400,3 +400,19 @@ as the embed code they generate may be slightly different and lead to
 inconsistency on your site.
 
 In general, whenever you make changes to embed settings you are recommended to clear out Embed objects using [`purge_embeds` command](purge_embeds).
+
+(embeds_referrer_policy)=
+
+## Referrer policy
+
+Some embed providers, including YouTube, require the browser to send a `Referer` header when loading embedded content. If the header is missing, the provider may refuse to show the content and display an error in place of the embed.
+
+Django's [`SecurityMiddleware`](inv:django:std:label#security-middleware) (enabled in projects created with `wagtail start`) sends a `Referrer-Policy` header based on the [`SECURE_REFERRER_POLICY`](inv:django:std:setting#SECURE_REFERRER_POLICY) setting. Its default value, `same-origin`, prevents the browser from sending a `Referer` header to other sites, which includes requests made by embedded `<iframe>` elements.
+
+To allow embeds from these providers to display, set `SECURE_REFERRER_POLICY` to a value that sends the origin of your site on cross-origin requests. We recommend `strict-origin-when-cross-origin`, which is also the default policy used by browsers:
+
+```python
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+```
+
+With this policy, only the origin of your site (for example `https://www.example.com/`) is sent to other sites, not the full URL of the page. See the [MDN documentation for `Referrer-Policy`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referrer-Policy) for details of the available values.
