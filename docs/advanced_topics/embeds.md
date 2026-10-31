@@ -409,7 +409,9 @@ Some embed providers, including YouTube, require the browser to send a `Referer`
 
 Django's [`SecurityMiddleware`](inv:django:std:label#security-middleware) (enabled in projects created with `wagtail start`) sends a `Referrer-Policy` header based on the [`SECURE_REFERRER_POLICY`](inv:django:std:setting#SECURE_REFERRER_POLICY) setting. Its default value, `same-origin`, prevents the browser from sending a `Referer` header to other sites, which includes requests made by embedded `<iframe>` elements.
 
-To allow embeds from these providers to display, set `SECURE_REFERRER_POLICY` to a value that sends the origin of your site on cross-origin requests. We recommend `strict-origin-when-cross-origin`, which is also the default policy used by browsers:
+Some providers include a `referrerpolicy` attribute on the `<iframe>` in their embed HTML, which takes precedence over the site-wide policy. For example, current YouTube embeds use `referrerpolicy="strict-origin-when-cross-origin"` and display correctly with Django's default setting. However, embeds can still be affected when the provider does not include this attribute, such as embed HTML returned by other providers or custom finders, or YouTube embed HTML that was fetched and stored in the `Embed` model before the attribute was added. In the latter case, you can fetch the latest embed HTML by clearing out the stored embeds with the [`purge_embeds` command](purge_embeds).
+
+To allow embeds without this attribute to display, set `SECURE_REFERRER_POLICY` to a value that sends the origin of your site on cross-origin requests. We recommend `strict-origin-when-cross-origin`, which is also the default policy used by browsers:
 
 ```python
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
