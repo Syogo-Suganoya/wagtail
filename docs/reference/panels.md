@@ -235,7 +235,7 @@ The `MultipleChooserPanel` definition on `BlogPage` would be:
 
 ```python
         MultipleChooserPanel(
-            'gallery_images', label="Gallery images", chooser_field_name="image"
+            'gallery_images', label="gallery image", chooser_field_name="image"
         )
 ```
 
