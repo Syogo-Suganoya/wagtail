@@ -2162,6 +2162,29 @@ class TestMultipleChooserPanel(PageFixturesMixin, WagtailTestUtils, TestCase):
             response, r"\u0022chooserFieldName\u0022: \u0022image\u0022"
         )
 
+    def test_add_button_label_keeps_case(self):
+        # The label should be used as given, as lowercasing it is incorrect
+        # for languages such as German and for acronyms
+        edit_handler = ObjectList(
+            [
+                MultipleChooserPanel(
+                    "related_links",
+                    label="Bild in Galerie",
+                    chooser_field_name="link_page",
+                )
+            ]
+        ).bind_to_model(EventPage)
+        form_class = edit_handler.get_form_class()
+        request = RequestFactory().get("/")
+        request.user = self.user
+        html = edit_handler.get_bound_panel(
+            request=request, form=form_class()
+        ).render_form_content()
+
+        soup = self.get_soup(html)
+        button = soup.select_one("#id_related_links-OPEN_MODAL")
+        self.assertEqual(button.get_text(strip=True), "Add Bild in Galerie")
+
 
 class TestMultipleChooserPanelGetComparison(PageFixturesMixin, TestCase):
     fixtures = ["test.json"]
