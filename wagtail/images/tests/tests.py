@@ -953,6 +953,21 @@ class TestWagtailImageField(TestCase):
             self.assertIsInstance(to_python.image, WillowImageFile)
             self.assertEqual(to_python.content_type, "image/png")
 
+    def test_to_python_rewinds_temporary_file(self):
+        # Validation reads the file, so it should be rewound afterwards
+        # to let later code (e.g. saving the image) read all of it
+        f = WagtailImageField()
+        with TemporaryUploadedFile(
+            "test_temp.png", "image/png", self.image_size, None
+        ) as tmp_file:
+            self.image.seek(0)
+            tmp_file.write(self.image.read())
+            tmp_file.seek(0)
+
+            to_python = f.to_python(tmp_file)
+            self.assertEqual(to_python.tell(), 0)
+            self.assertEqual(len(to_python.read()), self.image_size)
+
     def test_to_python_raises_error_with_invalid_image_file(self):
         msg = (
             "Upload a valid image. The file you uploaded was either not an "
